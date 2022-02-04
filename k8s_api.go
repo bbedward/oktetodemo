@@ -161,9 +161,9 @@ func (k *KubernetesAPI) SortPods(podResponse []PodResponse, sortMethod PodSortMe
 		// Sort by age (timestamp)
 		case SortAge:
 			if sortDirection == SortAscending {
-				return podResponse[a].CreatedTS.Before(podResponse[b].CreatedTS)
+				return podResponse[a].CreatedTS.After(podResponse[b].CreatedTS)
 			}
-			return podResponse[a].CreatedTS.After(podResponse[b].CreatedTS)
+			return podResponse[a].CreatedTS.Before(podResponse[b].CreatedTS)
 		// Sort by restarts (int)
 		case SortRestarts:
 			if sortDirection == SortAscending {

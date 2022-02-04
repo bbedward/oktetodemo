@@ -6,6 +6,9 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -27,6 +30,19 @@ func main() {
 	http.HandleFunc("/npods", controller.Npods)
 	// Pods with sort function
 	http.HandleFunc("/pods", controller.Pods)
+	// Prometheus metrics
+	promauto.NewGaugeFunc(prometheus.GaugeOpts{
+		Namespace: "bbedward",
+		Name:      "pod_count",
+		Help:      "Number of pods in the bbedward namespace",
+	}, func() float64 {
+		npods, err := controller.K8sApi.GetNPods("bbedward")
+		if err != nil {
+			return -1
+		}
+		return float64(npods)
+	})
+	http.Handle("/metrics", promhttp.Handler())
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		panic(err)
 	}

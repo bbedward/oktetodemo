@@ -177,14 +177,14 @@ func TestSortPods(t *testing.T) {
 	AssertEqual(t, pods[2].Name, "pod1")
 	// Sort by age ascending
 	K8sMockAPI.SortPods(pods, SortAge, SortAscending)
-	AssertEqual(t, pods[0].Name, "pod1")
-	AssertEqual(t, pods[1].Name, "pod2")
-	AssertEqual(t, pods[2].Name, "pod3")
-	// Sort by age descending
-	K8sMockAPI.SortPods(pods, SortAge, SortDescending)
 	AssertEqual(t, pods[0].Name, "pod3")
 	AssertEqual(t, pods[1].Name, "pod2")
 	AssertEqual(t, pods[2].Name, "pod1")
+	// Sort by age descending
+	K8sMockAPI.SortPods(pods, SortAge, SortDescending)
+	AssertEqual(t, pods[0].Name, "pod1")
+	AssertEqual(t, pods[1].Name, "pod2")
+	AssertEqual(t, pods[2].Name, "pod3")
 	// Sort by restarts ascending
 	K8sMockAPI.SortPods(pods, SortRestarts, SortAscending)
 	AssertEqual(t, pods[0].Name, "pod1")
