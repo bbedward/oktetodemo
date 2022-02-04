@@ -36,15 +36,6 @@ const (
 	SortDescending PodSortDirection = "desc"
 )
 
-// JSONTime that can be serialized
-type JSONTime struct {
-	time.Time
-}
-
-func (t JSONTime) MarshalJSON() ([]byte, error) {
-	return []byte(t.Format(time.RFC3339)), nil
-}
-
 // Represents a kubernetes Pod
 type PodResponse struct {
 	Name      string    `json:"name"`

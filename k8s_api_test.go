@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	testclient "k8s.io/client-go/kubernetes/fake"
@@ -136,28 +137,28 @@ func TestGetNPods(t *testing.T) {
 	SetUpk8ApiTests()
 
 	npods, err := K8sMockAPI.GetNPods("bbedward")
-	AssertEqual(t, nil, err)
-	AssertEqual(t, 3, npods)
+	assert.Equal(t, nil, err)
+	assert.Equal(t, 3, npods)
 }
 
 func TestGetPods(t *testing.T) {
 	SetUpk8ApiTests()
 
 	pods, err := K8sMockAPI.GetPods("bbedward")
-	AssertEqual(t, nil, err)
-	AssertEqual(t, 3, len(pods))
+	assert.Equal(t, nil, err)
+	assert.Equal(t, 3, len(pods))
 
 	// Sort and check data
 	K8sMockAPI.SortPods(pods, SortName, SortAscending)
-	AssertEqual(t, pods[0].Name, "pod1")
-	AssertEqual(t, pods[0].CreatedTS.Format(time.RFC3339), "2022-02-01T00:00:00Z")
-	AssertEqual(t, pods[0].Restarts, 0)
-	AssertEqual(t, pods[1].Name, "pod2")
-	AssertEqual(t, pods[1].CreatedTS.Format(time.RFC3339), "2022-02-02T00:00:00Z")
-	AssertEqual(t, pods[1].Restarts, 1)
-	AssertEqual(t, pods[2].Name, "pod3")
-	AssertEqual(t, pods[2].CreatedTS.Format(time.RFC3339), "2022-02-03T00:00:00Z")
-	AssertEqual(t, pods[2].Restarts, 2)
+	assert.Equal(t, pods[0].Name, "pod1")
+	assert.Equal(t, pods[0].CreatedTS.Format(time.RFC3339), "2022-02-01T00:00:00Z")
+	assert.Equal(t, pods[0].Restarts, 0)
+	assert.Equal(t, pods[1].Name, "pod2")
+	assert.Equal(t, pods[1].CreatedTS.Format(time.RFC3339), "2022-02-02T00:00:00Z")
+	assert.Equal(t, pods[1].Restarts, 1)
+	assert.Equal(t, pods[2].Name, "pod3")
+	assert.Equal(t, pods[2].CreatedTS.Format(time.RFC3339), "2022-02-03T00:00:00Z")
+	assert.Equal(t, pods[2].Restarts, 2)
 }
 
 func TestSortPods(t *testing.T) {
@@ -167,34 +168,34 @@ func TestSortPods(t *testing.T) {
 
 	// Sort by name ascending
 	K8sMockAPI.SortPods(pods, SortName, SortAscending)
-	AssertEqual(t, pods[0].Name, "pod1")
-	AssertEqual(t, pods[1].Name, "pod2")
-	AssertEqual(t, pods[2].Name, "pod3")
+	assert.Equal(t, pods[0].Name, "pod1")
+	assert.Equal(t, pods[1].Name, "pod2")
+	assert.Equal(t, pods[2].Name, "pod3")
 	// Sort by name descending
 	K8sMockAPI.SortPods(pods, SortName, SortDescending)
-	AssertEqual(t, pods[0].Name, "pod3")
-	AssertEqual(t, pods[1].Name, "pod2")
-	AssertEqual(t, pods[2].Name, "pod1")
+	assert.Equal(t, pods[0].Name, "pod3")
+	assert.Equal(t, pods[1].Name, "pod2")
+	assert.Equal(t, pods[2].Name, "pod1")
 	// Sort by age ascending
 	K8sMockAPI.SortPods(pods, SortAge, SortAscending)
-	AssertEqual(t, pods[0].Name, "pod3")
-	AssertEqual(t, pods[1].Name, "pod2")
-	AssertEqual(t, pods[2].Name, "pod1")
+	assert.Equal(t, pods[0].Name, "pod3")
+	assert.Equal(t, pods[1].Name, "pod2")
+	assert.Equal(t, pods[2].Name, "pod1")
 	// Sort by age descending
 	K8sMockAPI.SortPods(pods, SortAge, SortDescending)
-	AssertEqual(t, pods[0].Name, "pod1")
-	AssertEqual(t, pods[1].Name, "pod2")
-	AssertEqual(t, pods[2].Name, "pod3")
+	assert.Equal(t, pods[0].Name, "pod1")
+	assert.Equal(t, pods[1].Name, "pod2")
+	assert.Equal(t, pods[2].Name, "pod3")
 	// Sort by restarts ascending
 	K8sMockAPI.SortPods(pods, SortRestarts, SortAscending)
-	AssertEqual(t, pods[0].Name, "pod1")
-	AssertEqual(t, pods[1].Name, "pod2")
-	AssertEqual(t, pods[2].Name, "pod3")
+	assert.Equal(t, pods[0].Name, "pod1")
+	assert.Equal(t, pods[1].Name, "pod2")
+	assert.Equal(t, pods[2].Name, "pod3")
 	// Sort by restarts descending
 	K8sMockAPI.SortPods(pods, SortRestarts, SortDescending)
-	AssertEqual(t, pods[0].Name, "pod3")
-	AssertEqual(t, pods[1].Name, "pod2")
-	AssertEqual(t, pods[2].Name, "pod1")
+	assert.Equal(t, pods[0].Name, "pod3")
+	assert.Equal(t, pods[1].Name, "pod2")
+	assert.Equal(t, pods[2].Name, "pod1")
 }
 
 func TestFormatAgeString(t *testing.T) {
@@ -208,26 +209,26 @@ func TestFormatAgeString(t *testing.T) {
 		t, _ := time.Parse(time.RFC3339, str)
 		return t
 	}
-	AssertEqual(t, "30.00 seconds", FormatAgeString(t1, fakeNow))
+	assert.Equal(t, "30.00 seconds", FormatAgeString(t1, fakeNow))
 	// 5 minutes
 	fakeNow = func() time.Time {
 		str := "2022-02-01T00:05:00.000Z"
 		t, _ := time.Parse(time.RFC3339, str)
 		return t
 	}
-	AssertEqual(t, "5.00 minutes", FormatAgeString(t1, fakeNow))
+	assert.Equal(t, "5.00 minutes", FormatAgeString(t1, fakeNow))
 	// 3 hours
 	fakeNow = func() time.Time {
 		str := "2022-02-01T03:00:00.000Z"
 		t, _ := time.Parse(time.RFC3339, str)
 		return t
 	}
-	AssertEqual(t, "3.00 hours", FormatAgeString(t1, fakeNow))
+	assert.Equal(t, "3.00 hours", FormatAgeString(t1, fakeNow))
 	// 10 days
 	fakeNow = func() time.Time {
 		str := "2022-02-11T00:00:00.000Z"
 		t, _ := time.Parse(time.RFC3339, str)
 		return t
 	}
-	AssertEqual(t, "10 days", FormatAgeString(t1, fakeNow))
+	assert.Equal(t, "10 days", FormatAgeString(t1, fakeNow))
 }
