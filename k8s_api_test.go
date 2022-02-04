@@ -11,11 +11,11 @@ import (
 	testclient "k8s.io/client-go/kubernetes/fake"
 )
 
-var k8sMockAPI KubernetesAPI
+var K8sMockAPI KubernetesAPI
 
-func setUp() func() {
+func SetUpk8ApiTests() {
 	// Setup
-	k8sMockAPI = KubernetesAPI{MockClientSet: testclient.NewSimpleClientset()}
+	K8sMockAPI = KubernetesAPI{MockClientSet: testclient.NewSimpleClientset()}
 
 	// Create a few pods
 	// Feb 1
@@ -114,45 +114,41 @@ func setUp() func() {
 		},
 	}
 
-	_, err := k8sMockAPI.MockClientSet.CoreV1().Pods(pod.Namespace).Create(context.TODO(), pod, metav1.CreateOptions{})
+	_, err := K8sMockAPI.MockClientSet.CoreV1().Pods(pod.Namespace).Create(context.TODO(), pod, metav1.CreateOptions{})
 	if err != nil {
 		fmt.Printf("Error occured while creating pod %s: %s", pod.Name, err.Error())
 		panic("Error in setUp creating pod")
 	}
-	_, err = k8sMockAPI.MockClientSet.CoreV1().Pods(pod.Namespace).Create(context.TODO(), pod2, metav1.CreateOptions{})
+	_, err = K8sMockAPI.MockClientSet.CoreV1().Pods(pod.Namespace).Create(context.TODO(), pod2, metav1.CreateOptions{})
 	if err != nil {
 		fmt.Printf("Error occured while creating pod %s: %s", pod.Name, err.Error())
 		panic("Error in setUp creating pod")
 	}
-	_, err = k8sMockAPI.MockClientSet.CoreV1().Pods(pod.Namespace).Create(context.TODO(), pod3, metav1.CreateOptions{})
+	_, err = K8sMockAPI.MockClientSet.CoreV1().Pods(pod.Namespace).Create(context.TODO(), pod3, metav1.CreateOptions{})
 	if err != nil {
 		fmt.Printf("Error occured while creating pod %s: %s", pod.Name, err.Error())
 		panic("Error in setUp creating pod")
-	}
-
-	return func() {
-		// Tear down
 	}
 }
 
 // Actual tests
 func TestGetNPods(t *testing.T) {
-	setUp()
+	SetUpk8ApiTests()
 
-	npods, err := k8sMockAPI.GetNPods("bbedward")
+	npods, err := K8sMockAPI.GetNPods("bbedward")
 	AssertEqual(t, nil, err)
 	AssertEqual(t, 3, npods)
 }
 
 func TestGetPods(t *testing.T) {
-	setUp()
+	SetUpk8ApiTests()
 
-	pods, err := k8sMockAPI.GetPods("bbedward")
+	pods, err := K8sMockAPI.GetPods("bbedward")
 	AssertEqual(t, nil, err)
 	AssertEqual(t, 3, len(pods))
 
 	// Sort and check data
-	k8sMockAPI.SortPods(pods, SortName, SortAscending)
+	K8sMockAPI.SortPods(pods, SortName, SortAscending)
 	AssertEqual(t, pods[0].Name, "pod1")
 	AssertEqual(t, pods[0].CreatedTS.Format(time.RFC3339), "2022-02-01T00:00:00Z")
 	AssertEqual(t, pods[0].Restarts, 0)
@@ -165,37 +161,37 @@ func TestGetPods(t *testing.T) {
 }
 
 func TestSortPods(t *testing.T) {
-	setUp()
+	SetUpk8ApiTests()
 
-	pods, _ := k8sMockAPI.GetPods("bbedward")
+	pods, _ := K8sMockAPI.GetPods("bbedward")
 
 	// Sort by name ascending
-	k8sMockAPI.SortPods(pods, SortName, SortAscending)
+	K8sMockAPI.SortPods(pods, SortName, SortAscending)
 	AssertEqual(t, pods[0].Name, "pod1")
 	AssertEqual(t, pods[1].Name, "pod2")
 	AssertEqual(t, pods[2].Name, "pod3")
 	// Sort by name descending
-	k8sMockAPI.SortPods(pods, SortName, SortDescending)
+	K8sMockAPI.SortPods(pods, SortName, SortDescending)
 	AssertEqual(t, pods[0].Name, "pod3")
 	AssertEqual(t, pods[1].Name, "pod2")
 	AssertEqual(t, pods[2].Name, "pod1")
 	// Sort by age ascending
-	k8sMockAPI.SortPods(pods, SortAge, SortAscending)
+	K8sMockAPI.SortPods(pods, SortAge, SortAscending)
 	AssertEqual(t, pods[0].Name, "pod1")
 	AssertEqual(t, pods[1].Name, "pod2")
 	AssertEqual(t, pods[2].Name, "pod3")
 	// Sort by age descending
-	k8sMockAPI.SortPods(pods, SortAge, SortDescending)
+	K8sMockAPI.SortPods(pods, SortAge, SortDescending)
 	AssertEqual(t, pods[0].Name, "pod3")
 	AssertEqual(t, pods[1].Name, "pod2")
 	AssertEqual(t, pods[2].Name, "pod1")
 	// Sort by restarts ascending
-	k8sMockAPI.SortPods(pods, SortRestarts, SortAscending)
+	K8sMockAPI.SortPods(pods, SortRestarts, SortAscending)
 	AssertEqual(t, pods[0].Name, "pod1")
 	AssertEqual(t, pods[1].Name, "pod2")
 	AssertEqual(t, pods[2].Name, "pod3")
 	// Sort by restarts descending
-	k8sMockAPI.SortPods(pods, SortRestarts, SortDescending)
+	K8sMockAPI.SortPods(pods, SortRestarts, SortDescending)
 	AssertEqual(t, pods[0].Name, "pod3")
 	AssertEqual(t, pods[1].Name, "pod2")
 	AssertEqual(t, pods[2].Name, "pod1")

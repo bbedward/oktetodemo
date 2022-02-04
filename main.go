@@ -10,9 +10,6 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-var ClientSet *kubernetes.Clientset
-var k8sAPI KubernetesAPI
-
 func main() {
 	fmt.Println("Starting hello-world server...")
 	// Create kubernetes client config
@@ -20,23 +17,29 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	ClientSet, err = kubernetes.NewForConfig(config)
+	ClientSet, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err)
 	}
-	k8sAPI = KubernetesAPI{ClientSet: ClientSet}
+	// Create controller
+	controller := OKtetoAPIController{K8sApi: &KubernetesAPI{ClientSet: ClientSet}}
 	// Number of pods
-	http.HandleFunc("/npods", npods)
+	http.HandleFunc("/npods", controller.Npods)
 	// Pods with sort function
-	http.HandleFunc("/pods", pods)
+	http.HandleFunc("/pods", controller.Pods)
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		panic(err)
 	}
 }
 
+// Define a "controller" so k8sAPI can be available
+type OKtetoAPIController struct {
+	K8sApi *KubernetesAPI
+}
+
 // Return number of pods in bbedward namespace
-func npods(w http.ResponseWriter, r *http.Request) {
-	npods, err := k8sAPI.GetNPods("bbedward")
+func (controller *OKtetoAPIController) Npods(w http.ResponseWriter, r *http.Request) {
+	npods, err := controller.K8sApi.GetNPods("bbedward")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(fmt.Sprintf(`{"error": "%s"}`, err.Error())))
@@ -46,8 +49,8 @@ func npods(w http.ResponseWriter, r *http.Request) {
 }
 
 // Return pods with sort functionality
-func pods(w http.ResponseWriter, r *http.Request) {
-	podResp, err := k8sAPI.GetPods("bbedward")
+func (controller *OKtetoAPIController) Pods(w http.ResponseWriter, r *http.Request) {
+	podResp, err := controller.K8sApi.GetPods("bbedward")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(fmt.Sprintf(`{"message": "%s"}`, err.Error())))
@@ -57,20 +60,20 @@ func pods(w http.ResponseWriter, r *http.Request) {
 	sort := strings.ToLower(r.URL.Query().Get("sort"))
 	if sort != "" && sort != string(SortName) && sort != string(SortAge) && sort != string(SortRestarts) {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(fmt.Sprintf(`{"message": "invalid sort option. Valid options are "%s", "%s", or "%s""}`, SortName, SortAge, SortRestarts)))
+		w.Write([]byte(fmt.Sprintf(`{"message": "invalid sort option. Valid options are \"%s\", \"%s\", or \"%s\""}`, SortName, SortAge, SortRestarts)))
 		return
 	} else if sort != "" {
 		sortDirection := strings.ToLower(r.URL.Query().Get("order"))
 		if sortDirection != "" && sortDirection != string(SortDescending) && sortDirection != string(SortAscending) {
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte(fmt.Sprintf(`{"message": "invalid sort direction. Valid options are "%s" or "%s""}`, SortAscending, SortDescending)))
+			w.Write([]byte(fmt.Sprintf(`{"message": "invalid sort direction. Valid options are \"%s\" or \"%s\""}`, SortAscending, SortDescending)))
 			return
 		} else if sortDirection == "" {
 			// Ascending by default
 			sortDirection = string(SortAscending)
 		}
 		// Perform sort
-		k8sAPI.SortPods(podResp, PodSortMethod(sort), PodSortDirection(sortDirection))
+		controller.K8sApi.SortPods(podResp, PodSortMethod(sort), PodSortDirection(sortDirection))
 	}
 	// Serialize and return response
 	marshalled, err := json.Marshal(podResp)

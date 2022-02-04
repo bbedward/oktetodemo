@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -69,7 +68,7 @@ func (p PodResponse) MarshalJSON() ([]byte, error) {
 }
 
 func (p *PodResponse) UnmarshalJSON(j []byte) error {
-	var rawStrings map[string]string
+	var rawStrings map[string]interface{}
 
 	err := json.Unmarshal(j, &rawStrings)
 	if err != nil {
@@ -78,20 +77,17 @@ func (p *PodResponse) UnmarshalJSON(j []byte) error {
 
 	for k, v := range rawStrings {
 		if strings.ToLower(k) == "name" {
-			p.Name = v
+			p.Name = fmt.Sprintf("%s", v)
 		} else if strings.ToLower(k) == "age" {
-			p.Age = v
+			p.Age = fmt.Sprintf("%s", v)
 		} else if strings.ToLower(k) == "created_ts" {
-			t, err := time.Parse(time.RFC3339, v)
+			t, err := time.Parse(time.RFC3339, fmt.Sprintf("%s", v))
 			if err != nil {
 				return err
 			}
 			p.CreatedTS = t
 		} else if strings.ToLower(k) == "restarts" {
-			p.Restarts, err = strconv.Atoi(v)
-			if err != nil {
-				return err
-			}
+			p.Restarts = int(v.(float64))
 		}
 	}
 
